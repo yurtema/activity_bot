@@ -2,7 +2,7 @@ FROM python:3.11
 
 RUN mkdir script
 
-ADD requirments.txt .
+ADD requirements.txt .
 ADD src script/src
 
 RUN pip install -r requirements.txt
