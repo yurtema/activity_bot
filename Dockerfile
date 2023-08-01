@@ -5,7 +5,7 @@ RUN mkdir script
 ADD requirments.txt .
 ADD src script/src
 
-RUN pip install -r requirments.txt
+RUN pip install -r requirements.txt
 
 WORKDIR /script/src
 
