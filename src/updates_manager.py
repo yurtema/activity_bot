@@ -38,7 +38,7 @@ def new_game(text, author_id):
     /new_game название_команды_1 название_команды_2...
     Наполняет scores командами после проверки на наличие аргументов
     """
-    global scores, commands, state, last_command_pos
+    global scores, coms, state, last_command_pos
 
     author_id.find('')
 
@@ -48,12 +48,12 @@ def new_game(text, author_id):
     # {код команды: очки, код команды: очки}
     scores = {}
     # [код команды, код команды]
-    commands = []
+    coms = []
     state = 'waiting_next'
 
-    for command in text.split(' ')[1:]:
-        commands.append(command)
-        scores[command] = 0
+    for com in text.split(' ')[1:]:
+        coms.append(com)
+        scores[com] = 0
 
     last_command_pos = 0
 
@@ -62,7 +62,7 @@ def new_game(text, author_id):
 
 @message_handler(commands=['/next'])
 def next_turn(text, author_id):
-    global state, last_command_pos, commands
+    global state, last_command_pos, coms
 
     text.find(author_id)
 
@@ -71,10 +71,10 @@ def next_turn(text, author_id):
 
     state = 'waiting_next'
 
-    command = commands[last_command_pos%len(commands)]
+    com = coms[last_command_pos % len(coms)]
     last_command_pos += 1
 
-    return f'Команда {command} \nСтраница {random.randint(1, 39)}, карточка {random.randint(1, 9)}, ' \
+    return f'Команда {com} \nСтраница {random.randint(1, 39)}, карточка {random.randint(1, 9)}, ' \
            f'{random.choice(["говорить", "показывать", "рисовать"])}\n'
 
 
