@@ -1,6 +1,8 @@
 import requests
 import time
 import urllib3.exceptions
+import os
+print(os.listdir('.'))
 import private
 from updates_manager import responde
 
