@@ -142,6 +142,7 @@ def send_scores(text, author_id):
     return out
 
 
+
 def responde(text, author_id):
     """Функция, вызываемая снаружи. Прогоняет текст по всем функциям-хэндлерам, возвращает результат"""
 
