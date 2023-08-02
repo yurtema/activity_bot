@@ -1,6 +1,5 @@
 import requests
 import time
-import urllib3.exceptions
 import private
 from updates_manager import responde
 
@@ -28,7 +27,7 @@ def handle_updates():
     try:
         update = requests.get(f'https://api.telegram.org/bot{private.token}/'
                               f'getUpdates?offset={offset}').json()['result']
-    except urllib3.exceptions.ProtocolError:
+    except requests.exceptions.ConnectionError:
         time.sleep(60)
         return
 
