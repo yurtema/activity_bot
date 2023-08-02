@@ -98,7 +98,7 @@ def win1(text, author_id):
     scores[comm] += 2
     state = 'waiting_next'
     scor = ''.join([f'{com}: {scores[com]}\n' for com in scores])
-    return f'Добавил два очка команде {comm}.' \
+    return f'Добавил два очка команде {comm}. \n' \
            f'Текущий счет: {scor}&' \
            'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
            f'"keyboard":[["/next"]]' \
