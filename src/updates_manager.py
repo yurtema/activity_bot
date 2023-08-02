@@ -180,7 +180,7 @@ def set_score(text, author_id):
     return f'Успешно установил счет команды {args[0]} на {args[1]}'
 
 
-@message_handler(commands=['/help'])
+@message_handler(commands=['/help', '/start'])
 def send_help(text, author_id):
     text.find(author_id)
 
