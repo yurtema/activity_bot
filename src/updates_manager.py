@@ -97,7 +97,9 @@ def win1(text, author_id):
 
     scores[comm] += 2
     state = 'waiting_next'
-    return f'Добавил два очка команде {comm}&' \
+    scor = ''.join([f'{com}: {scores[com]}\n' for com in scores])
+    return f'Добавил два очка команде {comm}.' \
+           f'Текущий счет: {scor}&' \
            'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
            f'"keyboard":[["/next"]]' \
            '}'.replace("'", '"')
@@ -139,7 +141,9 @@ def win2(text_, author_id):
 
     state = 'waiting_next'
     scores[text] += 1
-    return f'Добавил очко команде {text}&' \
+    scor = ''.join([f'{com}: {scores[com]}\n' for com in scores])
+    return f'Добавил очко команде {text}. \n' \
+           f'Текущий счет: {scor}&' \
            'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
            f'"keyboard":[["/next"]]' \
            '}'.replace("'", '"')
@@ -186,7 +190,8 @@ def send_help(text, author_id):
 
     return '/newgame <название 1 команды> <название 2 команды> ... Начинает новую игру, СТИРАЕТ СТАРУЮ \n' \
            '/next ролит следующий ход \n' \
-           '/set <название команды> <сколько очков установить> Устанавливает команде заданное количество очков'
+           '/set <название команды> <сколько очков установить> Устанавливает команде заданное количество очков \n' \
+           '/scores выводит текущий счет'
 
 
 def responde(text, author_id):
