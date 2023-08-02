@@ -1,10 +1,8 @@
 import random
 
-import requests
-import json
-
 funcs = []
 state = 'new_game'
+comms = []
 
 
 def message_handler(commands: list, strict=True):
@@ -38,7 +36,7 @@ def new_game(text, author_id):
     /new_game название_команды_1 название_команды_2...
     Наполняет scores командами после проверки на наличие аргументов
     """
-    global scores, coms, state, last_command_pos
+    global scores, comms, state, last_command_pos
 
     author_id.find('')
 
@@ -48,11 +46,11 @@ def new_game(text, author_id):
     # {код команды: очки, код команды: очки}
     scores = {}
     # [код команды, код команды]
-    coms = []
+    comms = []
     state = 'waiting_next'
 
     for com in text.split(' ')[1:]:
-        coms.append(com)
+        comms.append(com)
         scores[com] = 0
 
     last_command_pos = 0
@@ -62,20 +60,86 @@ def new_game(text, author_id):
 
 @message_handler(commands=['/next'])
 def next_turn(text, author_id):
-    global state, last_command_pos, coms
+    global state, last_command_pos, comms, comm
 
     text.find(author_id)
 
     if state != 'waiting_next':
-        return 'Сейчас не время использовать эту команду епта'
+        return
 
-    state = 'waiting_next'
+    state = 'waiting_win1'
 
-    com = coms[last_command_pos % len(coms)]
+    comm = comms[last_command_pos % len(comms)]
     last_command_pos += 1
 
-    return f'Команда {com} \nСтраница {random.randint(1, 39)}, карточка {random.randint(1, 9)}, ' \
-           f'{random.choice(["говорить", "показывать", "рисовать"])}\n'
+    return f'Команда {comm} \nСтраница {random.randint(1, 39)}, карточка {random.randint(1, 9)}, ' \
+           f'{random.choice(["говорить", "показывать", "рисовать"])}\n' \
+           f'Команда угадала за 60 секунд?'
+
+
+@message_handler(commands=['да'])
+def win1(text, author_id):
+    # победила первая команда
+    global state, scores, comm
+
+    text.find(author_id)
+
+    if state != 'waiting_win1':
+        return
+
+    scores[comm] += 2
+    state = 'waiting_next'
+    return f'Добавил два очка команде {comm}'
+
+
+@message_handler(commands=['нет'])
+def who_win2(text, author_id):
+    # Спросить кто победил за вторую минуту
+    global state, scores, comm
+
+    text.find(author_id)
+
+    if state != 'waiting_win1':
+        return
+
+    state = 'waiting_win2'
+    return 'Кто угадал за вторую минуту?'
+
+
+def win2(text, author_id):
+    # Понять кто победил за вторую минуту
+    global state, scores, comms
+    author_id.find('')
+
+    if state != 'waiting_win2':
+        return
+
+    if not (text in comms or text.lower() == 'никто'):
+        return 'Я жду название команды либо слово никто'
+
+    if text.lower() == 'никто':
+        state = 'waiting_next'
+        return 'Ну вы и лохи'
+
+    state = 'waiting_next'
+    scores[text] += 1
+    return f'Добавил очко команде {text}'
+
+
+funcs.append(win2)
+
+
+@message_handler(commands=['/scores'])
+def send_scores(text, author_id):
+    global scores
+    text.find(author_id)
+
+    try:
+        out = ''.join([f'{com}: {scores[com]}\n' for com in scores])
+    except NameError:
+        return 'Вы и игру еще не начали, дурни'
+
+    return out
 
 
 def responde(text, author_id):
