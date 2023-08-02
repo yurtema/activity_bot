@@ -30,7 +30,7 @@ def message_handler(commands: list, strict=True):
     return _create_wrapper
 
 
-@message_handler(commands=['/new_game'])
+@message_handler(commands=['/newgame'])
 def new_game(text, author_id):
     """
     /new_game название_команды_1 название_команды_2...
@@ -50,17 +50,20 @@ def new_game(text, author_id):
     state = 'waiting_next'
 
     for com in text.split(' ')[1:]:
-        comms.append(com)
-        scores[com] = 0
+        comms.append(com.lower())
+        scores[com.lower()] = 0
 
     last_command_pos = 0
 
-    return "Команды созданы, игра начата"
+    return 'Команды созданы, игра начата&' \
+           'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
+           f'"keyboard":[["/next"]]' \
+           '}'.replace("'", '"')
 
 
 @message_handler(commands=['/next'])
 def next_turn(text, author_id):
-    global state, last_command_pos, comms, comm
+    global state, last_command_pos, comm
 
     text.find(author_id)
 
@@ -72,15 +75,20 @@ def next_turn(text, author_id):
     comm = comms[last_command_pos % len(comms)]
     last_command_pos += 1
 
+    keys = ['да', 'нет']
+
     return f'Команда {comm} \nСтраница {random.randint(1, 39)}, карточка {random.randint(1, 9)}, ' \
            f'{random.choice(["говорить", "показывать", "рисовать"])}\n' \
-           f'Команда угадала за 60 секунд?'
+           f'Команда угадала за 60 секунд?&' \
+           'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
+           f'"keyboard":[{keys}]' \
+           '}'.replace("'", '"')
 
 
 @message_handler(commands=['да'])
 def win1(text, author_id):
     # победила первая команда
-    global state, scores, comm
+    global state, scores
 
     text.find(author_id)
 
@@ -89,41 +97,52 @@ def win1(text, author_id):
 
     scores[comm] += 2
     state = 'waiting_next'
-    return f'Добавил два очка команде {comm}'
+    return f'Добавил два очка команде {comm}&' \
+           'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
+           f'"keyboard":[["/next"]]' \
+           '}'.replace("'", '"')
 
 
 @message_handler(commands=['нет'])
 def who_win2(text, author_id):
     # Спросить кто победил за вторую минуту
-    global state, scores, comm
+    global state
 
     text.find(author_id)
 
     if state != 'waiting_win1':
         return
-
     state = 'waiting_win2'
-    return 'Кто угадал за вторую минуту?'
+    return 'Кто угадал за вторую минуту?&' \
+           'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
+           f'"keyboard":[{comms + ["никто"]}]' \
+           '}'.replace("'", '"')
 
 
-def win2(text, author_id):
+def win2(text_, author_id):
     # Понять кто победил за вторую минуту
-    global state, scores, comms
+    global state, scores
     author_id.find('')
-
+    text = text_.lower()
     if state != 'waiting_win2':
         return
 
-    if not (text in comms or text.lower() == 'никто'):
+    if not (text in comms or text == 'никто'):
         return 'Я жду название команды либо слово никто'
 
-    if text.lower() == 'никто':
+    if text == 'никто':
         state = 'waiting_next'
-        return 'Ну вы и лохи'
+        return 'Ну вы и лохи&' \
+               'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
+               f'"keyboard":[["/next"]]' \
+               '}'.replace("'", '"')
 
     state = 'waiting_next'
     scores[text] += 1
-    return f'Добавил очко команде {text}'
+    return f'Добавил очко команде {text}&' \
+           'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
+           f'"keyboard":[["/next"]]' \
+           '}'.replace("'", '"')
 
 
 funcs.append(win2)
@@ -131,7 +150,6 @@ funcs.append(win2)
 
 @message_handler(commands=['/scores'])
 def send_scores(text, author_id):
-    global scores
     text.find(author_id)
 
     try:
@@ -141,6 +159,34 @@ def send_scores(text, author_id):
 
     return out
 
+
+@message_handler(commands=['/set'])
+def set_score(text, author_id):
+    global scores
+
+    text.find(author_id)
+    args = text.split(' ')[1:]
+
+    if len(args) != 2:
+        return 'Мне нужно два аргумента: название команды и сколько очков им установить'
+    if args[0] not in comms:
+        return 'Я не знаю такой команды'
+    try:
+        args[1] = int(args[1])
+    except ValueError:
+        return 'Второй аргумент должен быть числом'
+
+    scores[args[0]] = args[1]
+    return f'Успешно установил счет команды {args[0]} на {args[1]}'
+
+
+@message_handler(commands=['/help'])
+def send_help(text, author_id):
+    text.find(author_id)
+
+    return '/newgame <название 1 команды> <название 2 команды> ... Начинает новую игру, СТИРАЕТ СТАРУЮ \n' \
+           '/next ролит следующий ход \n' \
+           '/set <название команды> <сколько очков установить> Устанавливает команде заданное количество очков'
 
 
 def responde(text, author_id):
