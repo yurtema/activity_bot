@@ -1,4 +1,5 @@
 import random
+import words
 
 funcs = []
 state = 'new_game'
@@ -77,8 +78,20 @@ def next_turn(text, author_id):
 
     keys = ['да', 'нет']
 
-    return f'Команда {comm} \nСтраница {random.randint(1, 39)}, карточка {random.randint(1, 9)}, ' \
-           f'{random.choice(["говорить", "показывать", "рисовать"])}\n' \
+    do = random.randint(1, 3)
+    things = ['Рисовать', 'Говорить', 'Показывать']
+
+    card = random.choice(words.all_words)
+
+    word1, word2 = card[do-1], card[do+2]
+
+    if word1 in words.red:
+        word1 = 'КРАСНОЕ СЛОВО ' + word1
+    if word2 in words.red:
+        word2 = 'КРАСНОЕ СЛОВО ' + word2
+
+    return f'Команда {comm} \n' \
+           f'{things[do-1]} {word1} или {word2}\n' \
            f'Команда угадала за 60 секунд?&' \
            'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
            f'"keyboard":[{keys}]' \
@@ -99,7 +112,7 @@ def win1(text, author_id):
     state = 'waiting_next'
     scor = ''.join([f'{com}: {scores[com]}\n' for com in scores])
     return f'Добавил два очка команде {comm}. \n' \
-           f'Текущий счет: {scor}&' \
+           f'Текущий счет: \n{scor}&' \
            'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
            f'"keyboard":[["/next"]]' \
            '}'.replace("'", '"')
@@ -143,7 +156,7 @@ def win2(text_, author_id):
     scores[text] += 1
     scor = ''.join([f'{com}: {scores[com]}\n' for com in scores])
     return f'Добавил очко команде {text}. \n' \
-           f'Текущий счет: {scor}&' \
+           f'Текущий счет: \n{scor}&' \
            'reply_markup={"is_persistent": true, "resize_keyboard": true,' \
            f'"keyboard":[["/next"]]' \
            '}'.replace("'", '"')
