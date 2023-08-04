@@ -1,4 +1,4 @@
-import requests
+import request
 import time
 import private
 from updates_manager import responde
